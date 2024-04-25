@@ -1,6 +1,10 @@
 #ifndef COLUMN_H
 #define COLUMN_H
 
+typedef enum {
+    NULLVAL = 1, UINT, INT, CHAR, FLOAT, DOUBLE, STRING, STRUCTURE
+} ENUM_TYPE;
+
 typedef struct {
     char *title;
     int *data;
