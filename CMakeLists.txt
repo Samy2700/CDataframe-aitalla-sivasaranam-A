@@ -7,4 +7,7 @@ add_executable(untitled main.c
         column.h
         column.c
         cdataframe.h
+        cdataframe.c
+        sort.h
+        sort.c
 )

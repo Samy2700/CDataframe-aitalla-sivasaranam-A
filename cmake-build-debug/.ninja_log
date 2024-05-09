@@ -1,6 +1,8 @@
 # ninja log v5
-3	121	7337878878811644	CMakeFiles/untitled.dir/main.c.obj	cb7211844c70876d
-13	139	7337878879016894	CMakeFiles/untitled.dir/column.c.obj	df25f3dce535ed30
-140	293	7337878880484044	untitled.exe	8050ba6c6fa785
-2	285	7354286746044950	build.ninja	33afbf56de2a8066
+4	606	7369515319014784	CMakeFiles/untitled.dir/main.c.obj	cb7211844c70876d
+10	598	7369515318872072	CMakeFiles/untitled.dir/column.c.obj	df25f3dce535ed30
+606	1186	7369515324766421	untitled.exe	8050ba6c6fa785
+12	869	7369515864452744	build.ninja	33afbf56de2a8066
 12	120	7337183706600398	CMakeFiles/untitled.dir/cdaraframe.c.obj	556a32c68088d04f
+45	252	7369544594455211	CMakeFiles/untitled.dir/sort.c.obj	de6f0b51d8406cf1
+18	255	7369544594490756	CMakeFiles/untitled.dir/cdataframe.c.obj	55b9a8f085dc0678
