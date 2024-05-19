@@ -5,44 +5,44 @@
 
 // Structure pour un dataframe
 typedef struct dataframe {
-    COLUMN **columns;         // Tableau de pointeurs vers COLUMN
-    unsigned int column_count;  // Nombre de colonnes dans le dataframe
-    unsigned int max_columns;   // Capacité maximale du tableau de colonnes
+    COLUMN **colonnes;         // Tableau de pointeurs vers COLUMN
+    unsigned int nombre_colonnes;  // Nombre de colonnes dans le dataframe
+    unsigned int max_colonnes;   // Capacité maximale du tableau de colonnes
 } DATAFRAME;
 
 // Prototypes des fonctions pour gérer le dataframe
-DATAFRAME *create_dataframe();
-void fill_dataframe_from_user(DATAFRAME *df);
-void hard_fill_dataframe(DATAFRAME *df, void **data, unsigned int num_rows, unsigned int num_columns, ENUM_TYPE *column_types, char **column_titles);
-ENUM_TYPE analyse_type(const char *typeStr);
-void *read_data_based_on_type(ENUM_TYPE type);
-void free_dataframe(DATAFRAME *df);
+DATAFRAME *creer_dataframe();
+void remplir_dataframe_par_utilisateur(DATAFRAME *df);
+void remplir_dataframe_statique(DATAFRAME *df);
+ENUM_TYPE analyser_type(const char *typeStr);
+void *lire_donnee_par_type(ENUM_TYPE type);
+void liberer_dataframe(DATAFRAME *df);
 
 // Prototypes des fonctions pour afficher le dataframe
-void display_full_dataframe(DATAFRAME *df);
-void display_dataframe_rows(DATAFRAME *df, unsigned int rows);
-void display_dataframe_columns(DATAFRAME *df, unsigned int columns);
+void afficher_dataframe_complete(DATAFRAME *df);
+void afficher_lignes_dataframe(DATAFRAME *df, unsigned int lignes);
+void afficher_colonnes_dataframe(DATAFRAME *df, unsigned int colonnes);
 
 // Prototypes des fonctions pour les opérations usuelles
-void add_row_to_dataframe(DATAFRAME *df, void **row_data);
-void delete_row_from_dataframe(DATAFRAME *df, unsigned int row_index);
-int add_column_to_dataframe(DATAFRAME *df, COLUMN *col);
-void remove_column_from_dataframe(DATAFRAME *df, unsigned int index);
-void rename_column_title(DATAFRAME *df, unsigned int column_index, const char *new_title);
-int check_value_existence(DATAFRAME *df, void *value);
-void *get_cell_value(DATAFRAME *df, unsigned int row, unsigned int column);
-void set_cell_value(DATAFRAME *df, unsigned int row, unsigned int column, void *value);
-void display_column_names(DATAFRAME *df);
+void ajouter_ligne_dataframe(DATAFRAME *df, void **donnees_ligne);
+void supprimer_ligne_dataframe(DATAFRAME *df, unsigned int indice_ligne);
+int ajouter_colonne_dataframe(DATAFRAME *df, COLUMN *col);
+void supprimer_colonne_dataframe(DATAFRAME *df, unsigned int index);
+void renommer_titre_colonne(DATAFRAME *df, unsigned int indice_colonne, const char *nouveau_titre);
+int verifier_existence_valeur(DATAFRAME *df, void *valeur);
+void *obtenir_valeur_cellule(DATAFRAME *df, unsigned int ligne, unsigned int colonne);
+void definir_valeur_cellule(DATAFRAME *df, unsigned int ligne, unsigned int colonne, void *valeur);
+void afficher_noms_colonnes(DATAFRAME *df);
 
 // Prototypes des fonctions pour l'analyse et les statistiques
-void display_row_count(DATAFRAME *df);
-void display_column_count(DATAFRAME *df);
-int count_cells_equal_to(DATAFRAME *df, void *value);
-int count_cells_greater_than(DATAFRAME *df, void *value);
-int count_cells_less_than(DATAFRAME *df, void *value);
+void afficher_nombre_lignes(DATAFRAME *df);
+void afficher_nombre_colonnes(DATAFRAME *df);
+int compter_cellules_egales_a(DATAFRAME *df, void *valeur);
+int compter_cellules_superieures_a(DATAFRAME *df, void *valeur);
+int compter_cellules_inferieures_a(DATAFRAME *df, void *valeur);
 
 // Prototypes des nouvelles fonctions pour la gestion des fichiers CSV
-DATAFRAME *load_from_csv(char *file_name, ENUM_TYPE *dftype, int size);
-void save_into_csv(DATAFRAME *cdf, char *file_name);
+DATAFRAME *charger_depuis_csv(char *nom_fichier, ENUM_TYPE *dftype, int taille);
+void sauvegarder_dans_csv(DATAFRAME *cdf, char *nom_fichier);
 
 #endif // CDATAFRAME_H
