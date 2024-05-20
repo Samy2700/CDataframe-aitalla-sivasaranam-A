@@ -319,7 +319,7 @@ void afficher_lignes_dataframe(DATAFRAME *df, unsigned int lignes) {
                     printf("%d: Identifiant = %d, Valeur = %.2f, Description = %s\n", j + 1, sp->identifiant, sp->valeur, sp->description);
                     break;
                 default:
-                    printf("%d: Type de donnees non géré.\n", j + 1);
+                    printf("%d: Type de donnees non gere.\n", j + 1);
                     break;
             }
         }
