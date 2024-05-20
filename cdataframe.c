@@ -1,3 +1,9 @@
+/**
+Nom du projet : CDataFrame
+Auteurs : Samy AIT ALLA, Sajin Sivasaranam
+Rôle : Implémentation des fonctions de gestion des dataframes
+*/
+
 #include "cdataframe.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,8 +11,13 @@
 
 #define MAX_LINE_LENGTH 1024
 
+/**
+Rôle : Créer un nouveau dataframe
+Paramètres : Aucun
+Retour : Pointeur vers le dataframe nouvellement créé
+*/
 DATAFRAME *creer_dataframe() {
-    DATAFRAME *df = (DATAFRAME *)malloc(sizeof(DATAFRAME));
+    DATAFRAME *df = (DATAFRAME *)malloc(sizeof(DATAFRAME)); // Allocation de mémoire pour le dataframe
     if (!df) {
         fprintf(stderr, "L'allocation de mémoire a échoué pour la dataframe\n");
         return NULL;
@@ -17,6 +28,12 @@ DATAFRAME *creer_dataframe() {
     return df;
 }
 
+/**
+Rôle : Remplir un dataframe avec des données saisies par l'utilisateur
+Paramètres :
+    - df : Pointeur vers le dataframe à remplir
+Retour : Aucun car elle remplit directement le dataframe passé en paramètre.
+*/
 void remplir_dataframe_par_utilisateur(DATAFRAME *df) {
     if (!df) {
         fprintf(stderr, "La dataframe est NULL.\n");
@@ -24,35 +41,41 @@ void remplir_dataframe_par_utilisateur(DATAFRAME *df) {
     }
 
     printf("Entrez le nombre de colonnes: ");
-    int num_columns;
-    scanf("%d", &num_columns);
-    df->colonnes = (COLUMN **)malloc(num_columns * sizeof(COLUMN *));
-    df->max_colonnes = num_columns;
+    int nombre_colonnes;
+    scanf("%d", &nombre_colonnes);
+    df->colonnes = (COLONNE **)malloc(nombre_colonnes * sizeof(COLONNE *));
+    df->max_colonnes = nombre_colonnes;
     df->nombre_colonnes = 0;
 
-    for (int i = 0; i < num_columns; i++) {
-        char type[20], name[100];
+    for (int i = 0; i < nombre_colonnes; i++) {
+        char type[20], nom[100];
         printf("Entrez le type et le nom de la colonne %d (par exemple, INT Age): ", i + 1);
-        scanf("%s %s", type, name);
-        ENUM_TYPE col_type = analyser_type(type);
-        COLUMN *new_column = creer_colonne(col_type, name);
-        if (!new_column) {
+        scanf("%s %s", type, nom);
+        TYPE_ENUM type_colonne = analyser_type(type);
+        COLONNE *nouvelle_colonne = creer_colonne(type_colonne, nom);
+        if (!nouvelle_colonne) {
             continue;
         }
-        ajouter_colonne_dataframe(df, new_column);
+        ajouter_colonne_dataframe(df, nouvelle_colonne);
 
-        printf("Entrez le nombre de lignes pour la colonne '%s': ", name);
-        int num_rows;
-        scanf("%d", &num_rows);
-        for (int j = 0; j < num_rows; j++) {
-            printf("Saisir les données pour la ligne %d: ", j + 1);
-            void *data = lire_donnee_par_type(col_type);
-            inserer_valeur(new_column, data);
+        printf("Entrez le nombre de lignes pour la colonne '%s': ", nom);
+        int nombre_lignes;
+        scanf("%d", &nombre_lignes);
+        for (int j = 0; j < nombre_lignes; j++) {
+            printf("Saisir les donnees pour la ligne %d: ", j + 1);
+            void *donnee = lire_donnee_par_type(type_colonne);
+            inserer_valeur(nouvelle_colonne, donnee);
         }
     }
 }
 
-ENUM_TYPE analyser_type(const char *typeStr) {
+/**
+Rôle : Analyser le type de colonne à partir d'une chaîne de caractères
+Paramètres :
+    - typeStr : Chaîne de caractères représentant le type
+Retour : Valeur de l'énumération TYPE_ENUM correspondant au type
+*/
+TYPE_ENUM analyser_type(const char *typeStr) {
     if (strcmp(typeStr, "INT") == 0) return INT;
     else if (strcmp(typeStr, "FLOAT") == 0) return FLOAT;
     else if (strcmp(typeStr, "DOUBLE") == 0) return DOUBLE;
@@ -62,9 +85,15 @@ ENUM_TYPE analyser_type(const char *typeStr) {
     return -1;
 }
 
+/**
+Rôle : Remplir un dataframe avec des données prédéfinies
+Paramètres :
+    - df : Pointeur vers le dataframe à remplir
+Retour : Aucun car elle remplit directement la dataframe en dur
+*/
 void remplir_dataframe_statique(DATAFRAME *df) {
     // Ajouter la première colonne d'entiers
-    COLUMN *col1 = creer_colonne(INT, "Colonne d'Entiers");
+    COLONNE *col1 = creer_colonne(INT, "Colonne d'Entiers");
     if (ajouter_colonne_dataframe(df, col1) == 0) {
         int data1[] = {1, 2, 3, 4, 5};
         for (int i = 0; i < 5; i++) {
@@ -73,7 +102,7 @@ void remplir_dataframe_statique(DATAFRAME *df) {
     }
 
     // Ajouter la deuxième colonne de flottants
-    COLUMN *col2 = creer_colonne(FLOAT, "Colonne de Flottants");
+    COLONNE *col2 = creer_colonne(FLOAT, "Colonne de Flottants");
     if (ajouter_colonne_dataframe(df, col2) == 0) {
         float data2[] = {1.1, 2.2, 3.3, 4.4, 5.5};
         for (int i = 0; i < 5; i++) {
@@ -82,7 +111,7 @@ void remplir_dataframe_statique(DATAFRAME *df) {
     }
 
     // Ajouter la troisième colonne de chaînes de caractères
-    COLUMN *col3 = creer_colonne(STRING, "Colonne de Chaînes");
+    COLONNE *col3 = creer_colonne(STRING, "Colonne de Chaines");
     if (ajouter_colonne_dataframe(df, col3) == 0) {
         char *data3[] = {"Un", "Deux", "Trois", "Quatre", "Cinq"};
         for (int i = 0; i < 5; i++) {
@@ -91,7 +120,7 @@ void remplir_dataframe_statique(DATAFRAME *df) {
     }
 
     // Ajouter la quatrième colonne de double
-    COLUMN *col4 = creer_colonne(DOUBLE, "Colonne de Doubles");
+    COLONNE *col4 = creer_colonne(DOUBLE, "Colonne de Doubles");
     if (ajouter_colonne_dataframe(df, col4) == 0) {
         double data4[] = {10.1, 20.2, 30.3, 40.4, 50.5};
         for (int i = 0; i < 5; i++) {
@@ -100,7 +129,7 @@ void remplir_dataframe_statique(DATAFRAME *df) {
     }
 
     // Ajouter la cinquième colonne de CHAR
-    COLUMN *col5 = creer_colonne(CHAR, "Colonne de Caractères");
+    COLONNE *col5 = creer_colonne(CHAR, "Colonne de Caracteres");
     if (ajouter_colonne_dataframe(df, col5) == 0) {
         char data5[] = {'A', 'B', 'C', 'D', 'E'};
         for (int i = 0; i < 5; i++) {
@@ -109,74 +138,94 @@ void remplir_dataframe_statique(DATAFRAME *df) {
     }
 
     // Ajouter la sixième colonne de STRUCTURE
-    COLUMN *col6 = creer_colonne(STRUCTURE, "Colonne de Structures");
+    COLONNE *col6 = creer_colonne(STRUCTURE, "Colonne de Structures");
     if (ajouter_colonne_dataframe(df, col6) == 0) {
-        CustomStructure data6[] = {
+        StructurePersonnalisee data6[] = {
                 {1, 100.1, "Premier"},
-                {2, 200.2, "Deuxième"},
-                {3, 300.3, "Troisième"},
-                {4, 400.4, "Quatrième"},
-                {5, 500.5, "Cinquième"}
+                {2, 200.2, "Deuxieme"},
+                {3, 300.3, "Troisieme"},
+                {4, 400.4, "Quatrieme"},
+                {5, 500.5, "Cinquieme"}
         };
         for (int i = 0; i < 5; i++) {
             inserer_valeur(col6, &data6[i]);
         }
     }
+    // Ajouter la septième colonne de UINT
+    COLONNE *col7 = creer_colonne(UINT, "Colonne de UINT");
+    if (ajouter_colonne_dataframe(df, col7) == 0) {
+        unsigned int data7[] = {10, 20, 30, 40, 50};
+        for (int i = 0; i < 5; i++) {
+            inserer_valeur(col7, &data7[i]);
+        }
+    }
 }
 
 
-void *lire_donnee_par_type(ENUM_TYPE type) {
-    void *data = NULL;
+/**
+Rôle : Lire une donnée en fonction de son type
+Paramètres :
+    - type : Type de la donnée à lire
+Retour : Pointeur vers la donnée lue
+*/
+void *lire_donnee_par_type(TYPE_ENUM type) {
+    void *donnee = NULL;
     switch (type) {
         case INT: {
-            int *value = malloc(sizeof(int));
+            int *valeur = malloc(sizeof(int));
             printf("Saisissez un entier: ");
-            scanf("%d", value);
-            data = value;
+            scanf("%d", valeur);
+            donnee = valeur;
             break;
         }
         case FLOAT: {
-            float *value = malloc(sizeof(float));
+            float *valeur = malloc(sizeof(float));
             printf("Entrez un flottant: ");
-            scanf("%f", value);
-            data = value;
+            scanf("%f", valeur);
+            donnee = valeur;
             break;
         }
         case DOUBLE: {
-            double *value = malloc(sizeof(double));
+            double *valeur = malloc(sizeof(double));
             printf("Entrez un double: ");
-            scanf("%lf", value);
-            data = value;
+            scanf("%lf", valeur);
+            donnee = valeur;
             break;
         }
         case CHAR: {
-            char *value = malloc(sizeof(char));
-            printf("Entrez un caractère: ");
-            scanf(" %c", value);
-            data = value;
+            char *valeur = malloc(sizeof(char));
+            printf("Entrez un caractere: ");
+            scanf(" %c", valeur);
+            donnee = valeur;
             break;
         }
         case STRING: {
-            char *value = malloc(256);
-            printf("Entrez une chaîne de caractère: ");
-            scanf("%255s", value);
-            data = value;
+            char *valeur = malloc(256);
+            printf("Entrez une chaine de caractere: ");
+            scanf("%255s", valeur);
+            donnee = valeur;
             break;
         }
         case STRUCTURE: {
-            CustomStructure *value = malloc(sizeof(CustomStructure));
-            printf("Entrez les valeurs de la structure (id, valeur): ");
-            scanf("%d %lf", &value->id, &value->value);
-            data = value;
+            StructurePersonnalisee *valeur = malloc(sizeof(StructurePersonnalisee));
+            printf("Entrez les valeurs de la structure (identifiant, valeur, description): ");
+            scanf("%d %lf %s", &valeur->identifiant, &valeur->valeur, valeur->description);
+            donnee = valeur;
             break;
         }
         default:
-            printf("Type de données non pris en charge.\n");
+            printf("Type de donnees non pris en charge.\n");
             break;
     }
-    return data;
+    return donnee;
 }
 
+/**
+Rôle : Libérer la mémoire allouée pour un dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe à libérer
+Retour : Aucun car elle libère simplement la mémoire allouée pour le dataframe.
+*/
 void liberer_dataframe(DATAFRAME *df) {
     if (df == NULL) return;
 
@@ -190,22 +239,35 @@ void liberer_dataframe(DATAFRAME *df) {
     free(df);
 }
 
-int ajouter_colonne_dataframe(DATAFRAME *df, COLUMN *col) {
+/**
+Rôle : Ajouter une colonne à un dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - col : Pointeur vers la colonne à ajouter
+Retour : 0 en cas de succès, -1 en cas d'erreur
+*/
+int ajouter_colonne_dataframe(DATAFRAME *df, COLONNE *col) {
     if (df == NULL || col == NULL) return -1;
     if (df->nombre_colonnes == df->max_colonnes) {
-        size_t new_size = df->max_colonnes == 0 ? 1 : df->max_colonnes * 2;
-        COLUMN **new_cols = realloc(df->colonnes, new_size * sizeof(COLUMN *));
-        if (!new_cols) return -1;
-        df->colonnes = new_cols;
-        df->max_colonnes = new_size;
+        size_t nouvelle_taille = df->max_colonnes == 0 ? 1 : df->max_colonnes * 2;
+        COLONNE **nouvelles_colonnes = realloc(df->colonnes, nouvelle_taille * sizeof(COLONNE *));
+        if (!nouvelles_colonnes) return -1;
+        df->colonnes = nouvelles_colonnes;
+        df->max_colonnes = nouvelle_taille;
     }
     df->colonnes[df->nombre_colonnes++] = col;
     return 0;
 }
 
+/**
+Rôle : Afficher le dataframe complet
+Paramètres :
+    - df : Pointeur vers le dataframe à afficher
+Retour : Aucun car elle affiche simplement le contenu du dataframe.
+*/
 void afficher_dataframe_complete(DATAFRAME *df) {
     if (!df || !df->colonnes) {
-        printf("La dataframe est vide ou non initialisée.\n");
+        printf("La dataframe est vide ou non initialisee.\n");
         return;
     }
     printf("La dataframe contient %u colonnes:\n", df->nombre_colonnes);
@@ -215,14 +277,21 @@ void afficher_dataframe_complete(DATAFRAME *df) {
     }
 }
 
+/**
+Rôle : Afficher un nombre spécifique de lignes pour chaque colonne du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe à afficher
+    - lignes : Nombre de lignes à afficher
+Retour : Aucun  car elle affiche directement un certain nombre de lignes du dataframe.
+*/
 void afficher_lignes_dataframe(DATAFRAME *df, unsigned int lignes) {
     if (!df || !df->colonnes) {
-        printf("La dataframe est vide ou non initialisée\n");
+        printf("La dataframe est vide ou non initialisee\n");
         return;
     }
-    printf("Afficher jusqu'à %u lignes de chacune des colonnes %u:\n", lignes, df->nombre_colonnes);
+    printf("Afficher jusqu'a %u lignes de chacune des colonnes %u:\n", lignes, df->nombre_colonnes);
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
-        COLUMN *col = df->colonnes[i];
+        COLONNE *col = df->colonnes[i];
         printf("Colonne %d (%s):\n", i + 1, col->titre);
 
         for (unsigned int j = 0; j < lignes && j < col->taille; j++) {
@@ -240,33 +309,47 @@ void afficher_lignes_dataframe(DATAFRAME *df, unsigned int lignes) {
                     printf("%d: %s\n", j + 1, (char*)col->donnees[j]);
                     break;
                 case STRUCTURE:
-                    CustomStructure *cs = (CustomStructure*)col->donnees[j];
-                    printf("%d: ID = %d, Value = %.2f\n", j + 1, cs->id, cs->value);
+                    StructurePersonnalisee *sp = (StructurePersonnalisee*)col->donnees[j];
+                    printf("%d: Identifiant = %d, Valeur = %.2f, Description = %s\n", j + 1, sp->identifiant, sp->valeur, sp->description);
                     break;
                 default:
-                    printf("%d: Type de données non géré.\n", j + 1);
+                    printf("%d: Type de donnees non géré.\n", j + 1);
                     break;
             }
         }
     }
 }
 
+/**
+Rôle : Ajouter une ligne de données à un dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - donnees_ligne : Tableau de pointeurs vers les données de la ligne à ajouter
+Retour : Aucun car elle ajoute directement les données dans le dataframe.
+*/
 void ajouter_ligne_dataframe(DATAFRAME *df, void **donnees_ligne) {
     if (!df || !df->colonnes) {
-        printf("La dataframe n'est pas correctement initialisée.\n");
+        printf("La dataframe n'est pas correctement initialisee.\n");
         return;
     }
 
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
         if (!inserer_valeur(df->colonnes[i], donnees_ligne[i])) {
-            printf("Échec de l'insertion des données dans la colonne %u.\n", i + 1);
+            printf("Echec de l'insertion des donnees dans la colonne %u.\n", i + 1);
         }
     }
 }
 
+/**
+Rôle : Supprimer une ligne de données d'un dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - indice_ligne : Index de la ligne à supprimer
+Retour : Aucun car elle supprime directement la ligne spécifiée du dataframe.
+*/
 void supprimer_ligne_dataframe(DATAFRAME *df, unsigned int indice_ligne) {
     if (!df) {
-        printf("La dataframe n'est pas initialisée.\n");
+        printf("La dataframe n'est pas initialisee.\n");
         return;
     }
 
@@ -282,18 +365,32 @@ void supprimer_ligne_dataframe(DATAFRAME *df, unsigned int indice_ligne) {
     }
 }
 
+/**
+Rôle : Afficher un nombre spécifique de colonnes du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe à afficher
+    - colonnes : Nombre de colonnes à afficher
+Retour : Aucun car elle affiche un certain nombre de colonnes du dataframe.
+*/
 void afficher_colonnes_dataframe(DATAFRAME *df, unsigned int colonnes) {
     if (!df || !df->colonnes) {
-        printf("La dataframe est vide ou non initialisée.\n");
+        printf("La dataframe est vide ou non initialisee.\n");
         return;
     }
-    printf("Affichage des %u premières colonnes sur %u colonnes totales:\n", colonnes, df->nombre_colonnes);
+    printf("Affichage des %u premieres colonnes sur %u colonnes totales:\n", colonnes, df->nombre_colonnes);
     for (unsigned int i = 0; i < colonnes && i < df->nombre_colonnes; i++) {
         printf("Colonne %u (%s):\n", i + 1, df->colonnes[i]->titre);
         imprimer_colonne(df->colonnes[i]);
     }
 }
 
+/**
+Rôle : Supprimer une colonne d'un dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - index : Index de la colonne à supprimer
+Retour : Aucun car elle supprime directement la colonne spécifiée du dataframe.
+*/
 void supprimer_colonne_dataframe(DATAFRAME *df, unsigned int index) {
     if (!df || index >= df->nombre_colonnes) {
         printf("Index de colonne invalide ou dataframe vide.\n");
@@ -308,28 +405,43 @@ void supprimer_colonne_dataframe(DATAFRAME *df, unsigned int index) {
     df->nombre_colonnes--;
 
     if (df->nombre_colonnes > 0 && df->nombre_colonnes == df->max_colonnes / 4) {
-        COLUMN **new_colonnes = realloc(df->colonnes, (df->max_colonnes / 2) * sizeof(COLUMN *));
-        if (new_colonnes) {
-            df->colonnes = new_colonnes;
+        COLONNE **nouvelles_colonnes = realloc(df->colonnes, (df->max_colonnes / 2) * sizeof(COLONNE *));
+        if (nouvelles_colonnes) {
+            df->colonnes = nouvelles_colonnes;
             df->max_colonnes /= 2;
         }
     }
 }
 
+/**
+Rôle : Renommer le titre d'une colonne
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - indice_colonne : Index de la colonne à renommer
+    - nouveau_titre : Nouveau titre de la colonne
+Retour : Aucun car elle renomme directement le titre de la colonne spécifiée.
+*/
 void renommer_titre_colonne(DATAFRAME *df, unsigned int indice_colonne, const char *nouveau_titre) {
     if (!df || indice_colonne >= df->nombre_colonnes || !nouveau_titre) {
         printf("Index de colonne ou nouveau titre invalide.\n");
         return;
     }
-    char *new_title_copy = strdup(nouveau_titre);
-    if (!new_title_copy) {
-        printf("Échec de l'allocation de mémoire pour le nouveau titre.\n");
+    char *nouveau_titre_copie = strdup(nouveau_titre);
+    if (!nouveau_titre_copie) {
+        printf("Echec de l'allocation de memoire pour le nouveau titre.\n");
         return;
     }
     free(df->colonnes[indice_colonne]->titre);
-    df->colonnes[indice_colonne]->titre = new_title_copy;
+    df->colonnes[indice_colonne]->titre = nouveau_titre_copie;
 }
 
+/**
+Rôle : Vérifier l'existence d'une valeur dans le dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - valeur : Pointeur vers la valeur à vérifier
+Retour : 1 si la valeur existe, 0 sinon
+*/
 int verifier_existence_valeur(DATAFRAME *df, void *valeur) {
     if (!df || !valeur) {
         printf("Dataframe ou valeur invalide.\n");
@@ -345,6 +457,14 @@ int verifier_existence_valeur(DATAFRAME *df, void *valeur) {
     return 0;
 }
 
+/**
+Rôle : Obtenir la valeur d'une cellule spécifique du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - ligne : Index de la ligne
+    - colonne : Index de la colonne
+Retour : Pointeur vers la valeur de la cellule
+*/
 void *obtenir_valeur_cellule(DATAFRAME *df, unsigned int ligne, unsigned int colonne) {
     if (df == NULL || colonne >= df->nombre_colonnes || ligne >= df->colonnes[colonne]->taille) {
         printf("Index de ligne ou de colonne non valide.\n");
@@ -353,7 +473,15 @@ void *obtenir_valeur_cellule(DATAFRAME *df, unsigned int ligne, unsigned int col
     return obtenir_valeur_a(df->colonnes[colonne], ligne);
 }
 
-
+/**
+Rôle : Définir la valeur d'une cellule spécifique du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - ligne : Index de la ligne
+    - colonne : Index de la colonne
+    - valeur : Pointeur vers la nouvelle valeur de la cellule
+Retour : Aucun car elle définit simplement la valeur d'une cellule spécifique dans le dataframe.
+*/
 void definir_valeur_cellule(DATAFRAME *df, unsigned int ligne, unsigned int colonne, void *valeur) {
     if (!df || colonne >= df->nombre_colonnes || ligne >= df->colonnes[colonne]->taille || !valeur) {
         printf("Index de ligne ou de colonne non valide, ou valeur nulle fournie.\n");
@@ -378,22 +506,28 @@ void definir_valeur_cellule(DATAFRAME *df, unsigned int ligne, unsigned int colo
             df->colonnes[colonne]->donnees[ligne] = strdup((char *)valeur);
             break;
         case STRUCTURE:
-            df->colonnes[colonne]->donnees[ligne] = malloc(sizeof(CustomStructure));
+            df->colonnes[colonne]->donnees[ligne] = malloc(sizeof(StructurePersonnalisee));
             if (df->colonnes[colonne]->donnees[ligne]) {
-                memcpy(df->colonnes[colonne]->donnees[ligne], valeur, sizeof(CustomStructure));
+                memcpy(df->colonnes[colonne]->donnees[ligne], valeur, sizeof(StructurePersonnalisee));
             } else {
-                printf("L'allocation de mémoire a échoué pour la structure.\n");
+                printf("L'allocation de memoire a echoue pour la structure.\n");
             }
             break;
         default:
-            printf("Type de données non géré.\n");
+            printf("Type de donnees non gere.\n");
             break;
     }
 }
 
+/**
+Rôle : Afficher les noms des colonnes du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+Retour : Aucun car elle affiche simplement les noms des colonnes du dataframe.
+*/
 void afficher_noms_colonnes(DATAFRAME *df) {
     if (!df) {
-        printf("La dataframe n'est pas initialisée.\n");
+        printf("La dataframe n'est pas initialisee.\n");
         return;
     }
     printf("Noms de colonnes:\n");
@@ -402,22 +536,41 @@ void afficher_noms_colonnes(DATAFRAME *df) {
     }
 }
 
+/**
+Rôle : Afficher le nombre de lignes du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+Retour : Aucun car elle affiche simplement le nombre de lignes du dataframe.
+*/
 void afficher_nombre_lignes(DATAFRAME *df) {
     if (!df || df->nombre_colonnes == 0 || !df->colonnes[0]) {
-        printf("La dataframe est vide ou mal initialisée.\n");
+        printf("La dataframe est vide ou mal initialisee.\n");
     } else {
         printf("Nombre de lignes: %u\n", df->colonnes[0]->taille);
     }
 }
 
+/**
+Rôle : Afficher le nombre de colonnes du dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+Retour : Aucun car elle affiche simplement le nombre de colonnes du dataframe.
+*/
 void afficher_nombre_colonnes(DATAFRAME *df) {
     if (!df) {
-        printf("La dataframe est vide ou mal initialisée.\n");
+        printf("La dataframe est vide ou mal initialisee.\n");
     } else {
         printf("Nombre de colonnes: %u\n", df->nombre_colonnes);
     }
 }
 
+/**
+Rôle : Compter le nombre de cellules égales à une valeur donnée dans le dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - valeur : Pointeur vers la valeur à comparer
+Retour : Nombre de cellules égales à la valeur donnée
+*/
 int compter_cellules_egales_a(DATAFRAME *df, void *valeur) {
     int count = 0;
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
@@ -426,6 +579,13 @@ int compter_cellules_egales_a(DATAFRAME *df, void *valeur) {
     return count;
 }
 
+/**
+Rôle : Compter le nombre de cellules supérieures à une valeur donnée dans le dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - valeur : Pointeur vers la valeur à comparer
+Retour : Nombre de cellules supérieures à la valeur donnée
+*/
 int compter_cellules_superieures_a(DATAFRAME *df, void *valeur) {
     int count = 0;
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
@@ -434,6 +594,13 @@ int compter_cellules_superieures_a(DATAFRAME *df, void *valeur) {
     return count;
 }
 
+/**
+Rôle : Compter le nombre de cellules inférieures à une valeur donnée dans le dataframe
+Paramètres :
+    - df : Pointeur vers le dataframe
+    - valeur : Pointeur vers la valeur à comparer
+Retour : Nombre de cellules inférieures à la valeur donnée
+*/
 int compter_cellules_inferieures_a(DATAFRAME *df, void *valeur) {
     int count = 0;
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
@@ -442,101 +609,113 @@ int compter_cellules_inferieures_a(DATAFRAME *df, void *valeur) {
     return count;
 }
 
-// Charger un dataframe à partir d'un fichier CSV
-DATAFRAME* charger_depuis_csv(char *nom_fichier, ENUM_TYPE *dftype, int taille) {
+/**
+Rôle : Charger un dataframe à partir d'un fichier CSV
+Paramètres :
+    - nom_fichier : Nom du fichier CSV
+    - dftype : Tableau des types des colonnes
+    - taille : Taille du tableau des types
+Retour : Pointeur vers le dataframe chargé
+*/
+DATAFRAME* charger_depuis_csv(char *nom_fichier, TYPE_ENUM *dftype, int taille) {
     FILE *file = fopen(nom_fichier, "r");
     if (!file) {
-        fprintf(stderr, "Échec de l'ouverture du fichier CSV : %s\n", nom_fichier);
+        fprintf(stderr, "Echec de l'ouverture du fichier CSV : %s\n", nom_fichier);
         return NULL;
     }
 
     DATAFRAME *df = creer_dataframe();
     if (!df) {
-        fprintf(stderr, "Échec de la création du dataframe.\n");
+        fprintf(stderr, "Echec de la creation du dataframe.\n");
         fclose(file);
         return NULL;
     }
 
-    char line[1024];
+    char ligne[1024];
     char *token;
-    int row_count = 0;
+    int nombre_lignes = 0;
 
     // Lire l'en-tête pour les titres de colonnes
-    if (fgets(line, sizeof(line), file)) {
-        char *column_titles[taille];
-        int col_index = 0;
+    if (fgets(ligne, sizeof(ligne), file)) {
+        char *titres_colonnes[taille];
+        int indice_colonne = 0;
 
-        token = strtok(line, ",");
-        while (token != NULL && col_index < taille) {
-            column_titles[col_index] = strdup(token);
-            col_index++;
+        token = strtok(ligne, ",");
+        while (token != NULL && indice_colonne < taille) {
+            titres_colonnes[indice_colonne] = strdup(token);
+            indice_colonne++;
             token = strtok(NULL, ",");
         }
 
         for (int i = 0; i < taille; i++) {
-            COLUMN *col = creer_colonne(dftype[i], column_titles[i]);
+            COLONNE *col = creer_colonne(dftype[i], titres_colonnes[i]);
             if (ajouter_colonne_dataframe(df, col) != 0) {
-                fprintf(stderr, "Échec de l'ajout de la colonne : %s\n", column_titles[i]);
+                fprintf(stderr, "Echec de l'ajout de la colonne : %s\n", titres_colonnes[i]);
             }
         }
     }
 
     // Lire les données
-    while (fgets(line, sizeof(line), file)) {
-        void **row_data = malloc(taille * sizeof(void *));
-        int col_index = 0;
+    while (fgets(ligne, sizeof(ligne), file)) {
+        void **donnees_ligne = malloc(taille * sizeof(void *));
+        int indice_colonne = 0;
 
-        token = strtok(line, ",");
-        while (token != NULL && col_index < taille) {
-            switch (dftype[col_index]) {
+        token = strtok(ligne, ",");
+        while (token != NULL && indice_colonne < taille) {
+            switch (dftype[indice_colonne]) {
                 case INT:
-                    row_data[col_index] = malloc(sizeof(int));
-                    *(int *)row_data[col_index] = atoi(token);
+                    donnees_ligne[indice_colonne] = malloc(sizeof(int));
+                    *(int *)donnees_ligne[indice_colonne] = atoi(token);
                     break;
                 case FLOAT:
-                    row_data[col_index] = malloc(sizeof(float));
-                    *(float *)row_data[col_index] = atof(token);
+                    donnees_ligne[indice_colonne] = malloc(sizeof(float));
+                    *(float *)donnees_ligne[indice_colonne] = atof(token);
                     break;
                 case DOUBLE:
-                    row_data[col_index] = malloc(sizeof(double));
-                    *(double *)row_data[col_index] = atof(token);
+                    donnees_ligne[indice_colonne] = malloc(sizeof(double));
+                    *(double *)donnees_ligne[indice_colonne] = atof(token);
                     break;
                 case CHAR:
-                    row_data[col_index] = malloc(sizeof(char));
-                    *(char *)row_data[col_index] = token[0];
+                    donnees_ligne[indice_colonne] = malloc(sizeof(char));
+                    *(char *)donnees_ligne[indice_colonne] = token[0];
                     break;
                 case STRING:
-                    row_data[col_index] = strdup(token);
+                    donnees_ligne[indice_colonne] = strdup(token);
                     break;
                 case STRUCTURE:
-                    row_data[col_index] = malloc(sizeof(CustomStructure));
-                    // Supposons que la structure soit sérialisée en une seule colonne (à adapter si besoin)
-                    sscanf(token, "%d %lf %s", &((CustomStructure *)row_data[col_index])->id,
-                           &((CustomStructure *)row_data[col_index])->value,
-                           ((CustomStructure *)row_data[col_index])->description);
+                    donnees_ligne[indice_colonne] = malloc(sizeof(StructurePersonnalisee));
+                    sscanf(token, "%d %lf %s", &((StructurePersonnalisee *)donnees_ligne[indice_colonne])->identifiant,
+                           &((StructurePersonnalisee *)donnees_ligne[indice_colonne])->valeur,
+                           ((StructurePersonnalisee *)donnees_ligne[indice_colonne])->description);
                     break;
                 default:
                     fprintf(stderr, "Type non pris en charge pour l'importation.\n");
                     break;
             }
-            col_index++;
+            indice_colonne++;
             token = strtok(NULL, ",");
         }
 
-        ajouter_ligne_dataframe(df, row_data);
-        free(row_data);
-        row_count++;
+        ajouter_ligne_dataframe(df, donnees_ligne);
+        free(donnees_ligne);
+        nombre_lignes++;
     }
 
     fclose(file);
     return df;
 }
 
-// Sauvegarder un dataframe dans un fichier CSV
+/**
+Rôle : Sauvegarder un dataframe dans un fichier CSV
+Paramètres :
+    - df : Pointeur vers le dataframe à sauvegarder
+    - nom_fichier : Nom du fichier CSV
+Retour : Aucun car elle sauvegarde simplement le dataframe dans un fichier CSV.
+*/
 void sauvegarder_dans_csv(DATAFRAME *df, char *nom_fichier) {
     FILE *file = fopen(nom_fichier, "w");
     if (!file) {
-        fprintf(stderr, "Échec de l'ouverture du fichier pour l'écriture : %s\n", nom_fichier);
+        fprintf(stderr, "Echec de l'ouverture du fichier pour l'ecriture : %s\n", nom_fichier);
         return;
     }
 
@@ -550,14 +729,14 @@ void sauvegarder_dans_csv(DATAFRAME *df, char *nom_fichier) {
     fprintf(file, "\n");
 
     // Déterminer le nombre de lignes
-    unsigned int row_count = df->colonnes[0]->taille;
+    unsigned int nombre_lignes = df->colonnes[0]->taille;
 
     // Écrire les données
-    for (unsigned int row = 0; row < row_count; row++) {
+    for (unsigned int ligne = 0; ligne < nombre_lignes; ligne++) {
         for (unsigned int col = 0; col < df->nombre_colonnes; col++) {
-            char buffer[256];
-            convertir_valeur(df->colonnes[col], row, buffer, sizeof(buffer));
-            fprintf(file, "%s", buffer);
+            char tampon[256];
+            convertir_valeur(df->colonnes[col], ligne, tampon, sizeof(tampon));
+            fprintf(file, "%s", tampon);
             if (col < df->nombre_colonnes - 1) {
                 fprintf(file, ",");
             }
@@ -567,4 +746,3 @@ void sauvegarder_dans_csv(DATAFRAME *df, char *nom_fichier) {
 
     fclose(file);
 }
-

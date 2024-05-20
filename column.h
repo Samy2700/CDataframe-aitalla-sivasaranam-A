@@ -4,55 +4,55 @@
 #include <stdlib.h>
 
 // Structure personnalisée pour des données complexes
-typedef struct CustomStructure {
-    int id;
-    double value;
+typedef struct StructurePersonnalisee {
+    int identifiant;
+    double valeur;
     char description[100];
-} CustomStructure;
+} StructurePersonnalisee;
 
 // Types énumérés pour les types de colonnes
-enum enum_type {
-    NULLVAL = 1, UINT, INT, CHAR, FLOAT, DOUBLE, STRING, STRUCTURE
+enum type_enum {
+    VALEURNULLE = 1, UINT, INT, CHAR, FLOAT, DOUBLE, STRING, STRUCTURE
 };
-typedef enum enum_type ENUM_TYPE;
+typedef enum type_enum TYPE_ENUM;
 
 // Union pour stocker différents types de données dans une colonne
-union column_type {
-    unsigned int uint_value;
-    unsigned int int_value;
-    char char_value;
-    float float_value;
-    double double_value;
-    char* string_value;
-    void* struct_value;
+union type_colonne {
+    unsigned int valeur_uint;
+    int valeur_int;
+    char valeur_char;
+    float valeur_float;
+    double valeur_double;
+    char* valeur_string;
+    void* valeur_structure;
 };
-typedef union column_type COL_TYPE;
+typedef union type_colonne TYPE_COLONNE;
 
 // Structure de la colonne
-struct column {
+struct colonne {
     char *titre;
     unsigned int taille;
-    unsigned int max_taille;
-    ENUM_TYPE type_colonne;
-    COL_TYPE **donnees;
+    unsigned int taille_max;
+    TYPE_ENUM type_colonne;
+    TYPE_COLONNE **donnees;
     unsigned long long int *index;
-    int valid_index;
+    int index_valide;
     int direction_tri;
 };
-typedef struct column COLUMN;
+typedef struct colonne COLONNE;
 
 // Prototypes des fonctions pour gérer les colonnes
-COLUMN *creer_colonne(ENUM_TYPE type, char *titre);
-int inserer_valeur(COLUMN *col, void *valeur);
-void supprimer_colonne(COLUMN **col);
-void convertir_valeur(COLUMN *col, unsigned long long int index, char *str, int taille);
-void imprimer_colonne(COLUMN *col);
+COLONNE *creer_colonne(TYPE_ENUM type, char *titre);
+int inserer_valeur(COLONNE *col, void *valeur);
+void supprimer_colonne(COLONNE **col);
+void convertir_valeur(COLONNE *col, unsigned long long int index, char *str, int taille);
+void imprimer_colonne(COLONNE *col);
 
-int compter_occurrences(COLUMN *col, void *valeur);
-void *obtenir_valeur_a(COLUMN *col, unsigned int index);
-int compter_superieur_a(COLUMN *col, void *valeur);
-int compter_inferieur_a(COLUMN *col, void *valeur);
-int compter_egal_a(COLUMN *col, void *valeur);
-int comparer_valeurs(ENUM_TYPE type, void *data1, void *data2);
+int compter_occurrences(COLONNE *col, void *valeur);
+void *obtenir_valeur_a(COLONNE *col, unsigned int index);
+int compter_superieur_a(COLONNE *col, void *valeur);
+int compter_inferieur_a(COLONNE *col, void *valeur);
+int compter_egal_a(COLONNE *col, void *valeur);
+int comparer_valeurs(TYPE_ENUM type, void *donnee1, void *donnee2);
 
 #endif // COLUMN_H

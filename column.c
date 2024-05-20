@@ -1,130 +1,171 @@
+/*
+Nom du projet : CDataFrame
+Auteurs : Samy AIT ALLA, Sajin Sivasaranam
+Rôle : Implémentation des fonctions de gestion des colonnes
+*/
+
 #include "column.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 // Taille de réallocation lors de l'extension de la colonne
-#define REALOC_SIZE 256
+#define TAILLE_REALLOC 256
 
-// Création d'une nouvelle colonne avec un type spécifié et un titre
-COLUMN *creer_colonne(ENUM_TYPE type, char *titre) {
-    COLUMN *col = (COLUMN *)malloc(sizeof(COLUMN));
+/**
+Rôle : Créer une nouvelle colonne avec un type spécifié et un titre
+Paramètres :
+    - type : Type des données dans la colonne (TYPE_ENUM)
+    - titre : Titre de la colonne
+Retour : Pointeur vers la colonne nouvellement créée
+*/
+COLONNE *creer_colonne(TYPE_ENUM type, char *titre) {
+    COLONNE *col = (COLONNE *)malloc(sizeof(COLONNE)); // Allocation de mémoire pour la colonne
     if (col == NULL) {
-        fprintf(stderr, "Échec de l'allocation de mémoire pour la structure des colonnes.\n");
+        fprintf(stderr, "Echec de l'allocation de memoire pour la structure des colonnes.\n");
         return NULL;
     }
 
-    col->titre = strdup(titre);
+    col->titre = strdup(titre); // Allocation de mémoire et copie du titre
     if (col->titre == NULL) {
-        free(col);
+        free(col); // Libération de la mémoire en cas d'échec
         fprintf(stderr, "Échec de l'allocation de mémoire pour le titre de la colonne.\n");
         return NULL;
     }
 
     col->taille = 0;             // Initialisation de la taille de la colonne à 0
-    col->max_taille = 0;         // Initialisation de la capacité maximale de la colonne à 0
-    col->type_colonne = type;   // Initialisation du type de données de la colonne
-    col->donnees = NULL;          // Initialisation du tableau de données à NULL
-    col->index = NULL;         // Initialisation de l'index à NULL
+    col->taille_max = 0;         // Initialisation de la capacité maximale de la colonne à 0
+    col->type_colonne = type;    // Initialisation du type de données de la colonne
+    col->donnees = NULL;         // Initialisation du tableau de données à NULL
+    col->index = NULL;           // Initialisation de l'index à NULL
 
     return col; // Retour de la colonne nouvellement créée
 }
 
-// Insertion d'une valeur dans la colonne
-int inserer_valeur(COLUMN *col, void *valeur) {
-    if (col->taille >= col->max_taille) {
-        size_t new_max_taille = col->max_taille == 0 ? REALOC_SIZE : col->max_taille + REALOC_SIZE;
-        COL_TYPE **new_data = (COL_TYPE **)realloc(col->donnees, new_max_taille * sizeof(COL_TYPE *));
-        if (!new_data) {
-            fprintf(stderr, "La réallocation de mémoire a échoué.\n");
+/**
+Rôle : Insérer une valeur dans la colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+    - valeur : Pointeur vers la valeur à insérer
+Retour : 1 si succès, 0 en cas d'échec
+*/
+int inserer_valeur(COLONNE *col, void *valeur) {
+    // Vérifier si une réallocation est nécessaire
+    if (col->taille >= col->taille_max) {
+        size_t nouvelle_taille_max = col->taille_max == 0 ? TAILLE_REALLOC : col->taille_max + TAILLE_REALLOC;
+        TYPE_COLONNE **nouvelles_donnees = (TYPE_COLONNE **)realloc(col->donnees, nouvelle_taille_max * sizeof(TYPE_COLONNE *));
+        if (!nouvelles_donnees) {
+            fprintf(stderr, "La reallocation de memoire a echoue.\n");
             return 0;
         }
-        col->donnees = new_data;              // Mise à jour du tableau de données
-        col->max_taille = new_max_taille;      // Mise à jour de la capacité maximale
+        col->donnees = nouvelles_donnees;              // Mise à jour du tableau de données
+        col->taille_max = nouvelle_taille_max;      // Mise à jour de la capacité maximale
     }
 
-    void *new_valeur = NULL;
+    void *nouvelle_valeur = NULL;
     switch (col->type_colonne) {    // Sélection du type de données de la colonne
         // Allocation de mémoire et copie de la valeur en fonction du type
         case UINT:
-            new_valeur = malloc(sizeof(unsigned int));
-            if (new_valeur) *(unsigned int *)new_valeur = *(unsigned int *)valeur;
+            nouvelle_valeur = malloc(sizeof(unsigned int));
+            if (nouvelle_valeur) *(unsigned int *)nouvelle_valeur = *(unsigned int *)valeur;
             break;
         case INT:
-            new_valeur = malloc(sizeof(int));
-            if (new_valeur) *(int *)new_valeur = *(int *)valeur;
+            nouvelle_valeur = malloc(sizeof(int));
+            if (nouvelle_valeur) *(int *)nouvelle_valeur = *(int *)valeur;
             break;
         case CHAR:
-            new_valeur = malloc(sizeof(char));
-            if (new_valeur) *(char *)new_valeur = *(char *)valeur;
+            nouvelle_valeur = malloc(sizeof(char));
+            if (nouvelle_valeur) *(char *)nouvelle_valeur = *(char *)valeur;
             break;
         case FLOAT:
-            new_valeur = malloc(sizeof(float));
-            if (new_valeur) *(float *)new_valeur = *(float *)valeur;
+            nouvelle_valeur = malloc(sizeof(float));
+            if (nouvelle_valeur) *(float *)nouvelle_valeur = *(float *)valeur;
             break;
         case DOUBLE:
-            new_valeur = malloc(sizeof(double));
-            if (new_valeur) *(double *)new_valeur = *(double *)valeur;
+            nouvelle_valeur = malloc(sizeof(double));
+            if (nouvelle_valeur) *(double *)nouvelle_valeur = *(double *)valeur;
             break;
         case STRING:
-            new_valeur = strdup((char *)valeur);
+            nouvelle_valeur = strdup((char *)valeur);
             break;
         case STRUCTURE:
-            new_valeur = malloc(sizeof(CustomStructure));
-            if (new_valeur) memcpy(new_valeur, valeur, sizeof(CustomStructure));
+            nouvelle_valeur = malloc(sizeof(StructurePersonnalisee));
+            if (nouvelle_valeur) memcpy(nouvelle_valeur, valeur, sizeof(StructurePersonnalisee));
             break;
         default:
             fprintf(stderr, "Type non pris en charge pour l'insertion.\n");
             return 0;
     }
+
     // Vérification de l'allocation de la nouvelle valeur
-    if (!new_valeur) {
-        fprintf(stderr, "L'allocation de mémoire pour la nouvelle valeur a échoué.\n");
+    if (!nouvelle_valeur) {
+        fprintf(stderr, "L'allocation de memoire pour la nouvelle valeur a echoue.\n");
         return 0;
     }
 
     // Insertion de la nouvelle valeur dans le tableau de données
-    col->donnees[col->taille++] = new_valeur;
+    col->donnees[col->taille++] = nouvelle_valeur;
     return 1;
 }
 
-// Suppression d'une colonne
-void supprimer_colonne(COLUMN **col_ptr) {
+/**
+Rôle : Supprimer une colonne
+Paramètres :
+    - col_ptr : Pointeur vers le pointeur de la colonne à supprimer
+Retour : Aucun car elle libère simplement la mémoire allouée pour la colonne spécifiée.
+*/
+void supprimer_colonne(COLONNE **col_ptr) {
     if (col_ptr == NULL || *col_ptr == NULL) {
         fprintf(stderr, "Tentative de suppression d'un pointeur de colonne nul.\n");
         return;
     }
 
-    COLUMN *col = *col_ptr;
+    COLONNE *col = *col_ptr;
 
-    for (unsigned int i = 0; i < col->taille; i++) {   // Parcours des données de la colonne
+    // Parcourir et libérer les données de la colonne
+    for (unsigned int i = 0; i < col->taille; i++) {
         if (col->donnees[i] != NULL) {
-            if (col->type_colonne == STRING) {   // Vérification du type de données
-                free(*(char **)(col->donnees[i]));   // Libération de la mémoire allouée pour une chaîne de caractères
+            if (col->type_colonne == STRING) {
+                free(*(char **)(col->donnees[i]));
             }
-            free(col->donnees[i]);     // Libération de la mémoire allouée pour la valeur
+            free(col->donnees[i]);
         }
     }
 
-    free(col->donnees);      // Libération de la mémoire allouée pour le tableau de données
-    free(col->titre);     // Libération de la mémoire allouée pour le titre de la colonne
-    free(col);
+    free(col->donnees);      // Libérer la mémoire allouée pour le tableau de données
+    free(col->titre);        // Libérer la mémoire allouée pour le titre de la colonne
+    free(col);               // Libérer la mémoire de la colonne elle-même
 
-    *col_ptr = NULL;   // Réinitialisation du pointeur de colonne
+    *col_ptr = NULL;         // Réinitialiser le pointeur de colonne
 }
 
-// Conversion d'une structure personnalisée en chaîne de caractères
-void CustomStructureToString(CustomStructure *cs, char *str, size_t taille) {
-    if (cs == NULL || str == NULL) {
+/**
+Rôle : Convertir une structure personnalisée en chaîne de caractères
+Paramètres :
+    - sp : Pointeur vers la structure personnalisée
+    - str : Tampon de chaîne de caractères
+    - taille : Taille du tampon
+Retour : Aucun car elle convertit directement une structure personnalisée en chaîne de caractères.
+*/
+void StructurePersonnaliseeEnString(StructurePersonnalisee *sp, char *str, size_t taille) {
+    if (sp == NULL || str == NULL) {
         snprintf(str, taille, "NULL");
         return;
     }
     // Formatage de la structure en chaîne de caractères
-    snprintf(str, taille, "ID: %d, Value: %.2f, Description: %s", cs->id, cs->value, cs->description);
+    snprintf(str, taille, "ID: %d, Valeur: %.2f, Description: %s", sp->identifiant, sp->valeur, sp->description);
 }
 
-// Conversion de la valeur à un index spécifié en chaîne de caractères
-void convertir_valeur(COLUMN *col, unsigned long long int index, char *str, int taille) {
+/**
+Rôle : Convertir la valeur à un index spécifié en chaîne de caractères
+Paramètres :
+    - col : Pointeur vers la colonne
+    - index : Index de la valeur à convertir
+    - str : Tampon de chaîne de caractères
+    - taille : Taille du tampon
+Retour : Aucun car elle convertit simplement la valeur à un index spécifié en chaîne de caractères.
+*/
+void convertir_valeur(COLONNE *col, unsigned long long int index, char *str, int taille) {
     if (col == NULL || str == NULL) {
         snprintf(str, taille, "NULL");
         return;
@@ -155,7 +196,7 @@ void convertir_valeur(COLUMN *col, unsigned long long int index, char *str, int 
             snprintf(str, taille, "%s", (char *)(col->donnees[index]));
             break;
         case STRUCTURE:
-            CustomStructureToString((CustomStructure *)(col->donnees[index]), str, taille);
+            StructurePersonnaliseeEnString((StructurePersonnalisee *)(col->donnees[index]), str, taille);
             break;
         default:
             snprintf(str, taille, "Type non pris en charge.");
@@ -163,91 +204,134 @@ void convertir_valeur(COLUMN *col, unsigned long long int index, char *str, int 
     }
 }
 
-// Impression du contenu de la colonne
-void imprimer_colonne(COLUMN *col) {
+/**
+Rôle : Imprimer le contenu d'une colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+Retour : Aucun car elle imprime simplement le contenu de la colonne.
+*/
+void imprimer_colonne(COLONNE *col) {
     if (col == NULL) {
-        printf("Tentavive d'impression d'une colonne nulle.\n");
+        printf("Tentative d'impression d'une colonne nulle.\n");
         return;
     }
 
-    printf("Colonne '%s':\n", col->titre);  // Affichage du titre de la colonne
-    char buffer[256];  // Tampon pour stocker la valeur convertie en chaîne de caractères
+    printf("Colonne '%s':\n", col->titre);  // Afficher le titre de la colonne
+    char tampon[256];  // Tampon pour stocker la valeur convertie en chaîne de caractères
 
+    // Parcourir et afficher les valeurs de la colonne
     for (unsigned int i = 0; i < col->taille; i++) {
-        convertir_valeur(col, i, buffer, sizeof(buffer)); // Conversion de la valeur en chaîne de caractères
-        printf("[%u] %s\n", i, buffer); // Affichage de l'indice et de la valeur
+        convertir_valeur(col, i, tampon, sizeof(tampon)); // Conversion de la valeur en chaîne de caractères
+        printf("[%u] %s\n", i, tampon); // Affichage de l'indice et de la valeur
     }
 }
 
-// Comptage des occurrences d'une valeur dans la colonne
-int compter_occurrences(COLUMN *col, void *valeur) {
+/**
+Rôle : Compter le nombre d'occurrences d'une valeur dans une colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+    - valeur : Pointeur vers la valeur à compter
+Retour : Nombre d'occurrences de la valeur dans la colonne
+*/
+int compter_occurrences(COLONNE *col, void *valeur) {
     if (col == NULL || valeur == NULL) return 0;
 
-    int count = 0;
+    int compteur = 0;
     for (unsigned int i = 0; i < col->taille; i++) {
         if (comparer_valeurs(col->type_colonne, col->donnees[i], valeur) == 0) {  // Comparaison de la valeur
-            count++;  // Incrémentation du compteur si la valeur correspond
+            compteur++;  // Incrémentation du compteur si la valeur correspond
         }
     }
-    return count;  // Retour du nombre d'occurrences
+    return compteur;  // Retour du nombre d'occurrences
 }
 
-// Récupération de la valeur à un index spécifié dans la colonne
-void *obtenir_valeur_a(COLUMN *col, unsigned int index) {
+/**
+Rôle : Obtenir la valeur à un index spécifié dans une colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+    - index : Index de la valeur à obtenir
+Retour : Pointeur vers la valeur à l'index spécifié
+*/
+void *obtenir_valeur_a(COLONNE *col, unsigned int index) {
     if (col == NULL || index >= col->taille) return NULL;  // Vérification de la colonne et de l'index
     return col->donnees[index];  // Retour de la valeur à l'index spécifié
 }
 
-// Comptage des valeurs supérieures à une valeur donnée dans la colonne
-int compter_superieur_a(COLUMN *col, void *valeur) {
+/**
+Rôle : Compter le nombre de valeurs supérieures à une valeur donnée dans une colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+    - valeur : Pointeur vers la valeur de comparaison
+Retour : Nombre de valeurs supérieures à la valeur donnée
+*/
+int compter_superieur_a(COLONNE *col, void *valeur) {
     if (col == NULL || valeur == NULL) return 0;
 
-    int count = 0;
+    int compteur = 0;
     for (unsigned int i = 0; i < col->taille; i++) {
         if (comparer_valeurs(col->type_colonne, col->donnees[i], valeur) > 0) {
-            count++;  // Incrémentation du compteur si la valeur est supérieure
+            compteur++;  // Incrémentation du compteur si la valeur est supérieure
         }
     }
-    return count; // Retour du nombre de valeurs supérieures
+    return compteur; // Retour du nombre de valeurs supérieures
 }
 
-// Comptage des valeurs inférieures à une valeur donnée dans la colonne
-int compter_inferieur_a(COLUMN *col, void *valeur) {
+/**
+Rôle : Compter le nombre de valeurs inférieures à une valeur donnée dans une colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+    - valeur : Pointeur vers la valeur de comparaison
+Retour : Nombre de valeurs inférieures à la valeur donnée
+*/
+int compter_inferieur_a(COLONNE *col, void *valeur) {
     if (col == NULL || valeur == NULL) return 0;
 
-    int count = 0;
+    int compteur = 0;
     for (unsigned int i = 0; i < col->taille; i++) {
         if (comparer_valeurs(col->type_colonne, col->donnees[i], valeur) < 0) {
-            count++;  // Incrémentation du compteur si la valeur est inférieure
+            compteur++;  // Incrémentation du compteur si la valeur est inférieure
         }
     }
-    return count;  // Retour du nombre de valeurs inférieures
+    return compteur;  // Retour du nombre de valeurs inférieures
 }
 
-// Comptage des valeurs égales à une valeur donnée dans la colonne
-int compter_egal_a(COLUMN *col, void *valeur) {
+/**
+Rôle : Compter le nombre de valeurs égales à une valeur donnée dans une colonne
+Paramètres :
+    - col : Pointeur vers la colonne
+    - valeur : Pointeur vers la valeur de comparaison
+Retour : Nombre de valeurs égales à la valeur donnée
+*/
+int compter_egal_a(COLONNE *col, void *valeur) {
     return compter_occurrences(col, valeur);  // Utilisation de la fonction de comptage d'occurrences
 }
 
-// Comparaison de deux valeurs en fonction de leur type
-int comparer_valeurs(ENUM_TYPE type, void *data1, void *data2) {
-    if (data1 == NULL || data2 == NULL) return -1;
+/**
+Rôle : Comparer deux valeurs en fonction de leur type
+Paramètres :
+    - type : Type des valeurs à comparer
+    - donnee1 : Pointeur vers la première valeur
+    - donnee2 : Pointeur vers la deuxième valeur
+Retour : 0 si les valeurs sont égales, >0 si donnee1 > donnee2, <0 si donnee1 < donnee2
+*/
+int comparer_valeurs(TYPE_ENUM type, void *donnee1, void *donnee2) {
+    if (donnee1 == NULL || donnee2 == NULL) return -1;
 
     switch (type) {  // Sélection du type de données
         // Comparaison des valeurs en fonction de leur type
         case INT:
-            return (*(int *)data1 > *(int *)data2) - (*(int *)data1 < *(int *)data2);
+            return (*(int *)donnee1 > *(int *)donnee2) - (*(int *)donnee1 < *(int *)donnee2);
         case FLOAT:
-            return (*(float *)data1 > *(float *)data2) - (*(float *)data1 < *(float *)data2);
+            return (*(float *)donnee1 > *(float *)donnee2) - (*(float *)donnee1 < *(float *)donnee2);
         case DOUBLE:
-            return (*(double *)data1 > *(double *)data2) - (*(double *)data1 < *(double *)data2);
+            return (*(double *)donnee1 > *(double *)donnee2) - (*(double *)donnee1 < *(double *)donnee2);
         case CHAR:
-            return (*(char *)data1 > *(char *)data2) - (*(char *)data1 < *(char *)data2);
+            return (*(char *)donnee1 > *(char *)donnee2) - (*(char *)donnee1 < *(char *)donnee2);
         case STRING:
-            return strcmp((char *)data1, (char *)data2);   // Utilisation de la fonction strcmp pour les chaînes de caractères
+            return strcmp((char *)donnee1, (char *)donnee2);   // Utilisation de la fonction strcmp pour les chaînes de caractères
         case STRUCTURE:
-            return ((CustomStructure *)data1)->value > ((CustomStructure *)data2)->value ? 1 :
-                   ((CustomStructure *)data1)->value < ((CustomStructure *)data2)->value ? -1 : 0;
+            return ((StructurePersonnalisee *)donnee1)->valeur > ((StructurePersonnalisee *)donnee2)->valeur ? 1 :
+                   ((StructurePersonnalisee *)donnee1)->valeur < ((StructurePersonnalisee *)donnee2)->valeur ? -1 : 0;
         default:
             fprintf(stderr, "Type non pris en charge pour comparaison.\n");
             return -1;
