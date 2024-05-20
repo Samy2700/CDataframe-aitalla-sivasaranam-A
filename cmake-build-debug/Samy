@@ -1,6 +1,0 @@
-Colonne d'Entiers,Colonne de Flottants,Colonne de Chaines,Colonne de Doubles,Colonne de Caracteres,Colonne de Structures
-1,1.10,Un,10.10,A,ID: 1, Valeur: 100.10, Description: Premier
-2,2.20,Deux,20.20,B,ID: 2, Valeur: 200.20, Description: Deuxieme
-3,3.30,Trois,30.30,C,ID: 3, Valeur: 300.30, Description: Troisieme
-4,4.40,Quatre,40.40,D,ID: 4, Valeur: 400.40, Description: Quatrieme
-5,5.50,Cinq,50.50,E,ID: 5, Valeur: 500.50, Description: Cinquieme

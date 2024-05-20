@@ -1,6 +1,6 @@
-ID,Age,Nom,Score,Lettre,StructID StructValue StructDescription
-1,25,Alice,95.5,A,1 88.9 "First description"
-2,30,Bob,85.0,B,2 92.5 "Second description"
-3,22,Charlie,78.3,C,3 70.1 "Third description"
-4,35,David,88.8,D,4 80.4 "Fourth description"
-5,28,Eve,90.2,E,5 99.5 "Fifth description"
+Entier,Flottant,Chaine,Double,Caractere,Structure
+1,1.1,Un,10.1,A,1 100.1 Premier
+2,2.2,Deux,20.2,B,2 200.2 Deuxième
+3,3.3,Trois,30.3,C,3 300.3 Troisième
+4,4.4,Quatre,40.4,D,4 400.4 Quatrième
+5,5.5,Cinq,50.5,E,5 500.5 Cinquième

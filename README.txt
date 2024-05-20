@@ -1,5 +1,3 @@
-fichier readme.txt :
-
 Projet Dataframe en C
 
 Membres du projet :
