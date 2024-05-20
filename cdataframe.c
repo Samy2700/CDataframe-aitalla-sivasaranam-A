@@ -248,13 +248,17 @@ Retour : 0 en cas de succès, -1 en cas d'erreur
 */
 int ajouter_colonne_dataframe(DATAFRAME *df, COLONNE *col) {
     if (df == NULL || col == NULL) return -1;
+    // Vérifie si le dataframe a atteint le nombre maximum de colonnes
     if (df->nombre_colonnes == df->max_colonnes) {
+        // Calcule la nouvelle taille du tableau de colonnes
         size_t nouvelle_taille = df->max_colonnes == 0 ? 1 : df->max_colonnes * 2;
+        //réalloue la mémoire pour agrandir le tableau de colonnes
         COLONNE **nouvelles_colonnes = realloc(df->colonnes, nouvelle_taille * sizeof(COLONNE *));
         if (!nouvelles_colonnes) return -1;
         df->colonnes = nouvelles_colonnes;
         df->max_colonnes = nouvelle_taille;
     }
+    // Ajoute la nouvelle colonne à la première position disponible dans le tableau
     df->colonnes[df->nombre_colonnes++] = col;
     return 0;
 }
@@ -271,6 +275,7 @@ void afficher_dataframe_complete(DATAFRAME *df) {
         return;
     }
     printf("La dataframe contient %u colonnes:\n", df->nombre_colonnes);
+    // Parcourt et affiche chaque colonne du dataframe
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
         printf("Colonne %d: %s\n", i + 1, df->colonnes[i]->titre);
         imprimer_colonne(df->colonnes[i]);
@@ -293,8 +298,9 @@ void afficher_lignes_dataframe(DATAFRAME *df, unsigned int lignes) {
     for (unsigned int i = 0; i < df->nombre_colonnes; i++) {
         COLONNE *col = df->colonnes[i];
         printf("Colonne %d (%s):\n", i + 1, col->titre);
-
+        // Affiche les données de la colonne, jusqu'à un maximum de 'lignes' ou la taille de la colonne
         for (unsigned int j = 0; j < lignes && j < col->taille; j++) {
+            // Affiche les données en fonction du type de la colonne
             switch (col->type_colonne) {
                 case INT:
                     printf("%d: %d\n", j + 1, *((int*)col->donnees[j]));
@@ -396,16 +402,20 @@ void supprimer_colonne_dataframe(DATAFRAME *df, unsigned int index) {
         printf("Index de colonne invalide ou dataframe vide.\n");
         return;
     }
-
+    // Supprime la colonne à l'index spécifié
     supprimer_colonne(&df->colonnes[index]);
 
+    // Décale les colonnes restantes pour combler l'espace laissé par la colonne supprimée
     for (unsigned int i = index; i < df->nombre_colonnes - 1; i++) {
         df->colonnes[i] = df->colonnes[i + 1];
     }
     df->nombre_colonnes--;
 
+    // Si le nombre de colonnes est un quart de la capacité maximale, rétrécit le tableau de colonnes
     if (df->nombre_colonnes > 0 && df->nombre_colonnes == df->max_colonnes / 4) {
+        //Réalloue  la mémoire pour réduire la taille du tableau de colonnes
         COLONNE **nouvelles_colonnes = realloc(df->colonnes, (df->max_colonnes / 2) * sizeof(COLONNE *));
+        // Met à jour le tableau de colonnes et la capacité maximale
         if (nouvelles_colonnes) {
             df->colonnes = nouvelles_colonnes;
             df->max_colonnes /= 2;
@@ -426,12 +436,15 @@ void renommer_titre_colonne(DATAFRAME *df, unsigned int indice_colonne, const ch
         printf("Index de colonne ou nouveau titre invalide.\n");
         return;
     }
+    // Crée une copie du nouveau titre
     char *nouveau_titre_copie = strdup(nouveau_titre);
     if (!nouveau_titre_copie) {
         printf("Echec de l'allocation de memoire pour le nouveau titre.\n");
         return;
     }
+    // Libère la mémoire de l'ancien titre de la colonne
     free(df->colonnes[indice_colonne]->titre);
+    // Affecte le nouveau titre à la colonne
     df->colonnes[indice_colonne]->titre = nouveau_titre_copie;
 }
 
@@ -640,6 +653,7 @@ DATAFRAME* charger_depuis_csv(char *nom_fichier, TYPE_ENUM *dftype, int taille) 
         char *titres_colonnes[taille];
         int indice_colonne = 0;
 
+        // Tokenize la ligne de l'en-tête pour extraire les titres de colonnes
         token = strtok(ligne, ",");
         while (token != NULL && indice_colonne < taille) {
             titres_colonnes[indice_colonne] = strdup(token);
@@ -647,6 +661,7 @@ DATAFRAME* charger_depuis_csv(char *nom_fichier, TYPE_ENUM *dftype, int taille) 
             token = strtok(NULL, ",");
         }
 
+        // Crée et ajoute chaque colonne au dataframe
         for (int i = 0; i < taille; i++) {
             COLONNE *col = creer_colonne(dftype[i], titres_colonnes[i]);
             if (ajouter_colonne_dataframe(df, col) != 0) {
@@ -655,13 +670,14 @@ DATAFRAME* charger_depuis_csv(char *nom_fichier, TYPE_ENUM *dftype, int taille) 
         }
     }
 
-    // Lire les données
+    // Lecture des données
     while (fgets(ligne, sizeof(ligne), file)) {
-        void **donnees_ligne = malloc(taille * sizeof(void *));
+        void **donnees_ligne = malloc(taille * sizeof(void *));   //Tableau qui stocke les données de la ligne
         int indice_colonne = 0;
 
         token = strtok(ligne, ",");
         while (token != NULL && indice_colonne < taille) {
+            // Allocation de la mémoire et convertit les valeurs en fonction du type de chaque colonne
             switch (dftype[indice_colonne]) {
                 case INT:
                     donnees_ligne[indice_colonne] = malloc(sizeof(int));
